@@ -2,35 +2,47 @@
 pipeline {
     agent any
 
+    tools {
+        maven 'Maven-3.9'
+    }
+
     stages {
-        stage('Welcome') {
+        stage('Checkout') {
             steps {
-                echo 'Hello from GitHub!'
-                echo 'Jenkins is reading my Jenkinsfile.'
+                echo 'Source code is checked out from GitHub.'
             }
         }
 
-        stage('Build Simulation') {
+        stage('Build') {
             steps {
-                echo 'Starting build...'
-                echo 'Build completed successfully!'
+                sh 'mvn clean compile'
             }
         }
 
-        stage('Finish') {
+        stage('Unit Tests') {
             steps {
-                echo 'Jenkins Lesson 4 completed!'
+                sh 'mvn test'
+            }
+        }
+
+        stage('Package') {
+            steps {
+                sh 'mvn package'
             }
         }
     }
 
     post {
+        always {
+            junit '**/target/surefire-reports/*.xml'
+        }
+
         success {
-            echo 'Pipeline executed successfully!'
+            echo 'Java build and tests completed successfully!'
         }
 
         failure {
-            echo 'Pipeline failed. Check the console output.'
+            echo 'Build failed. Check the Console Output.'
         }
     }
 }
