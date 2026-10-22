@@ -5,7 +5,7 @@ pipeline {
     parameters {
         choice(
             name: 'ACTION',
-            choices: ['BUILD', 'TEST'],
+            choices: ['BUILD', 'TEST', 'DOCKER'],
             description: 'Choose what Jenkins should run'
         )
     }
@@ -56,6 +56,19 @@ pipeline {
                          fingerprint: true
 	    }
 	}
+
+    stage('Docker Image') {
+            when {
+                expression { params.ACTION == 'DOCKER' }
+            }
+            steps {
+                withEnv(['DOCKER_HOST=tcp://jenkins-docker:2375']) {
+                    sh 'mvn clean package'
+                    sh 'docker build -t jenkins-java-demo:latest .'
+                    sh 'docker image ls jenkins-java-demo'
+                }
+            }
+    }
 
     }
 
