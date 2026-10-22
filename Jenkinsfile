@@ -2,6 +2,14 @@
 pipeline {
     agent any
 
+    parameters {
+        choice(
+            name: 'ACTION',
+            choices: ['BUILD', 'TEST'],
+            description: 'Choose what Jenkins should run'
+        )
+    }
+
     tools {
         maven 'Maven-3.9'
     }
@@ -14,6 +22,9 @@ pipeline {
         }
 
         stage('Build') {
+            when {
+                expression { params.ACTION == 'BUILD' }
+            }
             steps {
                 echo "Build number: ${env.BUILD_NUMBER}"
                 sh 'mvn clean compile'
@@ -21,12 +32,18 @@ pipeline {
         }
 
         stage('Unit Tests') {
+            when {
+                expression { params.ACTION == 'TEST' }
+            }
             steps {
                 sh 'mvn test'
             }
         }
 
         stage('Package') {
+            when {
+                expression { params.ACTION == 'BUILD' }
+            }
             steps {
                 sh 'mvn package'
             }
